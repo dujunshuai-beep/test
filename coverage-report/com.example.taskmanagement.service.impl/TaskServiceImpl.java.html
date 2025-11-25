@@ -55,7 +55,7 @@ import java.util.Map;
     public Task save(Task task) {
 <span class="fc bfc" id="L56" title="All 2 branches covered.">        if (task.getId() == null) {</span>
 <span class="fc" id="L57">            taskMapper.insert(task);</span>
-<span class="fc" id="L58">        } else {</span>
+        } else {
 <span class="fc" id="L59">            taskMapper.update(task);</span>
         }
 <span class="fc" id="L61">        return task;</span>
@@ -79,7 +79,7 @@ import java.util.Map;
             // 批量删除任务
 <span class="fc bfc" id="L80" title="All 2 branches covered.">            for (Long id : ids) {</span>
 <span class="fc" id="L81">                taskMapper.delete(id);</span>
-            }
+<span class="fc" id="L82">            }</span>
         }
 <span class="fc" id="L84">    }</span>
 
