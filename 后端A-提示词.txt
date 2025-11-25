@@ -296,6 +296,8 @@ AI提示词：
 
 为本项目生成一份postman可导入测试文件
 
+跑一遍单元测试获取一下测试覆盖率，最终形成可视化形式。因为我需要传输到github上
+
 
 `https://github.com/dujunshuai-beep/test.git` 
 这是我的github地址，把本项目代码上传上去
