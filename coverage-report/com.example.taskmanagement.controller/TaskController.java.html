@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="zh"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TaskController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">taskmanagement</a> &gt; <a href="index.source.html" class="el_package">com.example.taskmanagement.controller</a> &gt; <span class="el_source">TaskController.java</span></div><h1>TaskController.java</h1><pre class="source lang-java linenums">package com.example.taskmanagement.controller;
+
+import com.example.taskmanagement.model.Task;
+import com.example.taskmanagement.service.TaskService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+@RestController
+@RequestMapping(&quot;/tasks&quot;)
+public class TaskController {
+
+    private TaskService taskService;
+
+    @Autowired
+<span class="fc" id="L35">    public TaskController(TaskService taskService) {</span>
+<span class="fc" id="L36">        this.taskService = taskService;</span>
+<span class="fc" id="L37">    }</span>
+
+    @Operation(summary = &quot;获取任务列表&quot;, description = &quot;支持分页、搜索和过滤的任务列表查询&quot;)
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = &quot;200&quot;, description = &quot;成功获取任务列表&quot;,
+                    content = @Content(mediaType = &quot;application/json&quot;,
+                            schema = @Schema(implementation = Page.class)))
+    })
+    @GetMapping
+    public ResponseEntity&lt;Page&lt;Task&gt;&gt; getAllTasks(
+            @Parameter(description = &quot;页码，从0开始&quot;) @RequestParam(defaultValue = &quot;0&quot;) int page,
+            @Parameter(description = &quot;每页大小&quot;) @RequestParam(defaultValue = &quot;10&quot;) int size,
+            @Parameter(description = &quot;排序字段&quot;) @RequestParam(defaultValue = &quot;createdAt&quot;) String sortBy,
+            @Parameter(description = &quot;排序方向&quot;) @RequestParam(defaultValue = &quot;desc&quot;) String direction,
+            @Parameter(description = &quot;任务标题搜索关键词&quot;) @RequestParam(required = false) String title,
+            @Parameter(description = &quot;任务描述搜索关键词&quot;) @RequestParam(required = false) String description,
+            @Parameter(description = &quot;任务状态（true/false）&quot;) @RequestParam(required = false) Boolean completed,
+            @Parameter(description = &quot;开始日期（yyyy-MM-dd）&quot;) @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @Parameter(description = &quot;结束日期（yyyy-MM-dd）&quot;) @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+
+        // 构建过滤参数
+<span class="fc" id="L58">        Map&lt;String, Object&gt; params = new HashMap&lt;&gt;();</span>
+<span class="pc bpc" id="L59" title="1 of 4 branches missed.">        if (title != null &amp;&amp; !title.isEmpty()) params.put(&quot;title&quot;, title);</span>
+<span class="pc bpc" id="L60" title="3 of 4 branches missed.">        if (description != null &amp;&amp; !description.isEmpty()) params.put(&quot;description&quot;, description);</span>
+<span class="pc bpc" id="L61" title="1 of 2 branches missed.">        if (completed != null) params.put(&quot;completed&quot;, completed);</span>
+<span class="pc bpc" id="L62" title="1 of 2 branches missed.">        if (startDate != null) params.put(&quot;startDate&quot;, LocalDateTime.of(startDate, LocalTime.MIN));</span>
+<span class="pc bpc" id="L63" title="1 of 2 branches missed.">        if (endDate != null) params.put(&quot;endDate&quot;, LocalDateTime.of(endDate, LocalTime.MAX));</span>
+
+        // 构建分页参数
+<span class="pc bpc" id="L66" title="1 of 2 branches missed.">        Sort.Direction sortDirection = direction.equalsIgnoreCase(&quot;asc&quot;) ? Sort.Direction.ASC : Sort.Direction.DESC;</span>
+<span class="fc" id="L67">        Sort sort = Sort.by(sortDirection, sortBy);</span>
+<span class="fc" id="L68">        Pageable pageable = PageRequest.of(page, size, sort);</span>
+
+<span class="fc" id="L70">        Page&lt;Task&gt; tasks = taskService.findAllTasks(params, pageable);</span>
+<span class="fc" id="L71">        return ResponseEntity.ok(tasks);</span>
+    }
+
+    @Operation(summary = &quot;获取单个任务&quot;, description = &quot;根据ID获取任务详情&quot;)
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = &quot;200&quot;, description = &quot;成功获取任务详情&quot;),
+            @ApiResponse(responseCode = &quot;404&quot;, description = &quot;任务不存在&quot;)
+    })
+    @GetMapping(&quot;/{id}&quot;)
+    public ResponseEntity&lt;Task&gt; getTaskById(@Parameter(description = &quot;任务ID&quot;, example = &quot;1&quot;) @PathVariable Long id) {
+<span class="fc" id="L81">        Task task = taskService.findById(id);</span>
+<span class="pc bpc" id="L82" title="1 of 2 branches missed.">        if (task == null) {</span>
+<span class="nc" id="L83">            return ResponseEntity.notFound().build();</span>
+        }
+<span class="fc" id="L85">        return ResponseEntity.ok(task);</span>
+    }
+
+    @Operation(summary = &quot;创建新任务&quot;, description = &quot;创建一个新的任务&quot;)
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = &quot;201&quot;, description = &quot;任务创建成功&quot;),
+            @ApiResponse(responseCode = &quot;400&quot;, description = &quot;请求参数错误&quot;)
+    })
+    @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
+    public ResponseEntity&lt;Task&gt; createTask(@io.swagger.v3.oas.annotations.parameters.RequestBody(
+            description = &quot;任务信息&quot;,
+            required = true,
+            content = @Content(schema = @Schema(implementation = Task.class, example = &quot;{\&quot;title\&quot;: \&quot;学习Spring Boot\&quot;, \&quot;description\&quot;: \&quot;完成项目开发\&quot;, \&quot;completed\&quot;: false}&quot;))
+    ) @RequestBody Task task) {
+<span class="fc" id="L100">        Task createdTask = taskService.save(task);</span>
+<span class="fc" id="L101">        return new ResponseEntity&lt;&gt;(createdTask, HttpStatus.CREATED);</span>
+    }
+
+    @Operation(summary = &quot;更新任务&quot;, description = &quot;根据ID更新任务信息&quot;)
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = &quot;200&quot;, description = &quot;任务更新成功&quot;),
+            @ApiResponse(responseCode = &quot;404&quot;, description = &quot;任务不存在&quot;),
+            @ApiResponse(responseCode = &quot;400&quot;, description = &quot;请求参数错误&quot;)
+    })
+    @PutMapping(&quot;/{id}&quot;)
+    public ResponseEntity&lt;Task&gt; updateTask(
+            @Parameter(description = &quot;任务ID&quot;, example = &quot;1&quot;) @PathVariable Long id,
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = &quot;任务信息&quot;,
+                    required = true,
+                    content = @Content(schema = @Schema(implementation = Task.class, example = &quot;{\&quot;title\&quot;: \&quot;更新后的任务标题\&quot;, \&quot;description\&quot;: \&quot;更新后的任务描述\&quot;, \&quot;completed\&quot;: true}&quot;))
+            ) @RequestBody Task task) {
+<span class="fc" id="L118">        Task updatedTask = taskService.update(id, task);</span>
+<span class="fc" id="L119">        return ResponseEntity.ok(updatedTask);</span>
+    }
+
+    @Operation(summary = &quot;删除任务&quot;, description = &quot;根据ID删除任务&quot;)
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = &quot;204&quot;, description = &quot;任务删除成功&quot;),
+            @ApiResponse(responseCode = &quot;404&quot;, description = &quot;任务不存在&quot;)
+    })
+    @DeleteMapping(&quot;/{id}&quot;)
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public ResponseEntity&lt;Void&gt; deleteTask(@Parameter(description = &quot;任务ID&quot;, example = &quot;1&quot;) @PathVariable Long id) {
+<span class="fc" id="L130">        taskService.delete(id);</span>
+<span class="fc" id="L131">        return ResponseEntity.noContent().build();</span>
+    }
+
+    @Operation(summary = &quot;批量删除任务&quot;, description = &quot;一次性删除多个任务&quot;)
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = &quot;204&quot;, description = &quot;任务删除成功&quot;),
+            @ApiResponse(responseCode = &quot;400&quot;, description = &quot;请求参数错误&quot;)
+    })
+    @DeleteMapping(&quot;/batch&quot;)
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public ResponseEntity&lt;Void&gt; deleteBatch(
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = &quot;任务ID列表&quot;,
+                    required = true,
+                    content = @Content(schema = @Schema(example = &quot;[1, 2, 3]&quot;))
+            ) @RequestBody List&lt;Long&gt; ids) {
+<span class="fc" id="L147">        taskService.deleteBatch(ids);</span>
+<span class="fc" id="L148">        return ResponseEntity.noContent().build();</span>
+    }
+
+    @Operation(summary = &quot;更新任务状态&quot;, description = &quot;更新任务的完成状态&quot;)
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = &quot;200&quot;, description = &quot;状态更新成功&quot;),
+            @ApiResponse(responseCode = &quot;404&quot;, description = &quot;任务不存在&quot;)
+    })
+    @PatchMapping(&quot;/{id}/status&quot;)
+    public ResponseEntity&lt;Task&gt; updateTaskStatus(
+            @Parameter(description = &quot;任务ID&quot;, example = &quot;1&quot;) @PathVariable Long id,
+            @Parameter(description = &quot;完成状态&quot;, example = &quot;true&quot;) @RequestParam Boolean completed) {
+<span class="fc" id="L160">        Task updatedTask = taskService.updateStatus(id, completed);</span>
+<span class="fc" id="L161">        return ResponseEntity.ok(updatedTask);</span>
+    }
+
+    @Operation(summary = &quot;获取所有任务（不分页）&quot;, description = &quot;获取所有任务列表，不分页&quot;)
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = &quot;200&quot;, description = &quot;成功获取任务列表&quot;)
+    })
+    @GetMapping(&quot;/all/list&quot;)
+    public ResponseEntity&lt;List&lt;Task&gt;&gt; getAllTasksList() {
+<span class="fc" id="L170">        List&lt;Task&gt; tasks = taskService.findAll();</span>
+<span class="fc" id="L171">        return ResponseEntity.ok(tasks);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>
