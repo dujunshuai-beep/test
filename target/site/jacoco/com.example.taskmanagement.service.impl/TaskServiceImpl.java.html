@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="zh"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TaskServiceImpl.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">taskmanagement</a> &gt; <a href="index.source.html" class="el_package">com.example.taskmanagement.service.impl</a> &gt; <span class="el_source">TaskServiceImpl.java</span></div><h1>TaskServiceImpl.java</h1><pre class="source lang-java linenums">package com.example.taskmanagement.service.impl;
+
+import com.example.taskmanagement.mapper.TaskMapper;
+import com.example.taskmanagement.model.Task;
+import com.example.taskmanagement.service.TaskService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+@Service
+<span class="fc" id="L18">public class TaskServiceImpl implements TaskService {</span>
+
+    @Autowired
+    private TaskMapper taskMapper;
+
+    @Override
+    public Page&lt;Task&gt; findAllTasks(Map&lt;String, Object&gt; params, Pageable pageable) {
+        // 构建查询参数
+<span class="fc" id="L26">        Map&lt;String, Object&gt; queryParams = new HashMap&lt;&gt;();</span>
+<span class="fc bfc" id="L27" title="All 2 branches covered.">        if (params != null) {</span>
+<span class="fc" id="L28">            queryParams.putAll(params);</span>
+        }
+        
+        // 查询数据
+<span class="fc" id="L32">        List&lt;Task&gt; tasks = taskMapper.findAll(queryParams, pageable);</span>
+        
+        // 查询总数
+<span class="fc" id="L35">        int total = taskMapper.count(queryParams);</span>
+        
+<span class="fc" id="L37">        return new PageImpl&lt;&gt;(tasks, pageable, total);</span>
+    }
+
+    @Override
+    public List&lt;Task&gt; findAll() {
+        // 使用分页参数获取所有任务，但设置一个很大的页大小来获取所有数据
+<span class="fc" id="L43">        Map&lt;String, Object&gt; params = new HashMap&lt;&gt;();</span>
+        // 使用实际的Pageable对象而不是unpaged()，避免UnsupportedOperationException
+<span class="fc" id="L45">        Pageable pageable = PageRequest.of(0, Integer.MAX_VALUE);</span>
+<span class="fc" id="L46">        return taskMapper.findAll(params, pageable);</span>
+    }
+
+    @Override
+    public Task findById(Long id) {
+<span class="fc" id="L51">        return taskMapper.findById(id);</span>
+    }
+
+    @Override
+    public Task save(Task task) {
+<span class="fc bfc" id="L56" title="All 2 branches covered.">        if (task.getId() == null) {</span>
+<span class="fc" id="L57">            taskMapper.insert(task);</span>
+<span class="fc" id="L58">        } else {</span>
+<span class="fc" id="L59">            taskMapper.update(task);</span>
+        }
+<span class="fc" id="L61">        return task;</span>
+    }
+
+    @Override
+    public Task update(Long id, Task task) {
+<span class="fc" id="L66">        task.setId(id);</span>
+<span class="fc" id="L67">        taskMapper.update(task);</span>
+<span class="fc" id="L68">        return taskMapper.findById(id);</span>
+    }
+
+    @Override
+    public void delete(Long id) {
+<span class="fc" id="L73">        taskMapper.delete(id);</span>
+<span class="fc" id="L74">    }</span>
+
+    @Override
+    public void deleteBatch(List&lt;Long&gt; ids) {
+<span class="fc bfc" id="L78" title="All 4 branches covered.">        if (ids != null &amp;&amp; !ids.isEmpty()) {</span>
+            // 批量删除任务
+<span class="fc bfc" id="L80" title="All 2 branches covered.">            for (Long id : ids) {</span>
+<span class="fc" id="L81">                taskMapper.delete(id);</span>
+            }
+        }
+<span class="fc" id="L84">    }</span>
+
+    @Override
+    public Task updateStatus(Long id, Boolean completed) {
+<span class="fc" id="L88">        Task task = taskMapper.findById(id);</span>
+<span class="fc bfc" id="L89" title="All 2 branches covered.">        if (task != null) {</span>
+<span class="fc" id="L90">            task.setCompleted(completed);</span>
+<span class="fc" id="L91">            taskMapper.update(task);</span>
+        }
+<span class="fc" id="L93">        return task;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

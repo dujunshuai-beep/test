@@ -1,0 +1,472 @@
+{
+  "info": {
+    "_postman_id": "task-management-api-collection",
+    "name": "任务管理API-带测试脚本",
+    "description": "任务管理系统的API测试集合，包含完整的测试脚本",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "获取分页任务列表",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/tasks?page=0&size=10&sortBy=createdAt&direction=desc",
+          "host": ["{{baseUrl}}"],
+          "path": ["tasks"],
+          "query": [
+            {"key": "page", "value": "0"},
+            {"key": "size", "value": "10"},
+            {"key": "sortBy", "value": "createdAt"},
+            {"key": "direction", "value": "desc"},
+            {"key": "title", "value": "", "disabled": true},
+            {"key": "description", "value": "", "disabled": true},
+            {"key": "completed", "value": "", "disabled": true},
+            {"key": "startDate", "value": "", "disabled": true},
+            {"key": "endDate", "value": "", "disabled": true}
+          ]
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('状态码应为200', function() {\n",
+              "    pm.response.to.have.status(200);\n",
+              "});\n",
+              "\n",
+              "pm.test('响应应为JSON格式', function() {\n",
+              "    pm.response.to.be.json;\n",
+              "});\n",
+              "\n",
+              "pm.test('响应体应包含必要字段', function() {\n",
+              "    var jsonData = pm.response.json();\n",
+              "    pm.expect(jsonData).to.have.property('content');\n",
+              "    pm.expect(jsonData).to.have.property('pageable');\n",
+              "    pm.expect(jsonData).to.have.property('totalElements');\n",
+              "    pm.expect(jsonData).to.have.property('totalPages');\n",
+              "    pm.expect(jsonData).to.have.property('size');\n",
+              "    pm.expect(jsonData).to.have.property('number');\n",
+              "});\n",
+              "\n",
+              "pm.test('content应为数组类型', function() {\n",
+              "    var jsonData = pm.response.json();\n",
+              "    pm.expect(Array.isArray(jsonData.content)).to.be.true;\n",
+              "});\n",
+              "\n",
+              "pm.test('每个任务对象应包含必要字段', function() {\n",
+              "    var jsonData = pm.response.json();\n",
+              "    if (jsonData.content && jsonData.content.length > 0) {\n",
+              "        jsonData.content.forEach(function(task) {\n",
+              "            pm.expect(task).to.have.property('id');\n",
+              "            pm.expect(task).to.have.property('title');\n",
+              "            pm.expect(task).to.have.property('description');\n",
+              "            pm.expect(task).to.have.property('completed');\n",
+              "            pm.expect(task).to.have.property('createdAt');\n",
+              "            pm.expect(task).to.have.property('updatedAt');\n",
+              "        });\n",
+              "    }\n",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "获取单个任务",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/tasks/1",
+          "host": ["{{baseUrl}}"],
+          "path": ["tasks", "1"]
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "// 先检查状态码，可能返回404（任务不存在）或200（成功）\n",
+              "pm.test('状态码应为200或404', function() {\n",
+              "    pm.expect([200, 404]).to.include(pm.response.code);\n",
+              "});\n",
+              "\n",
+              "// 根据状态码决定后续测试\n",
+              "if (pm.response.code === 200) {\n",
+              "    pm.test('响应应为JSON格式', function() {\n",
+              "        pm.response.to.be.json;\n",
+              "    });\n",
+              "    \n",
+              "    pm.test('任务对象应包含所有必要字段', function() {\n",
+              "        var jsonData = pm.response.json();\n",
+              "        pm.expect(jsonData).to.have.property('id');\n",
+              "        pm.expect(jsonData).to.have.property('title');\n",
+              "        pm.expect(jsonData).to.have.property('description');\n",
+              "        pm.expect(jsonData).to.have.property('completed');\n",
+              "        pm.expect(jsonData).to.have.property('createdAt');\n",
+              "        pm.expect(jsonData).to.have.property('updatedAt');\n",
+              "    });\n",
+              "    \n",
+              "    pm.test('任务ID应匹配请求ID', function() {\n",
+              "        var jsonData = pm.response.json();\n",
+              "        pm.expect(jsonData.id).to.eql(1);\n",
+              "    });\n",
+              "    \n",
+              "    pm.test('completed字段应为布尔类型', function() {\n",
+              "        var jsonData = pm.response.json();\n",
+              "        pm.expect(typeof jsonData.completed).to.eql('boolean');\n",
+              "    });\n",
+              "} else {\n",
+              "    pm.test('任务不存在时的响应处理', function() {\n",
+              "        console.log('任务不存在，状态码:', pm.response.code);\n",
+              "    });\n",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "创建新任务",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"学习Spring Boot\",\n  \"description\": \"完成项目开发\",\n  \"completed\": false\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/tasks",
+          "host": ["{{baseUrl}}"],
+          "path": ["tasks"]
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('状态码应为201', function() {\n",
+              "    pm.response.to.have.status(201);\n",
+              "});\n",
+              "\n",
+              "pm.test('响应应为JSON格式', function() {\n",
+              "    pm.response.to.be.json;\n",
+              "});\n",
+              "\n",
+              "pm.test('创建的任务应包含所有必要字段', function() {\n",
+              "    var jsonData = pm.response.json();\n",
+              "    pm.expect(jsonData).to.have.property('id');\n",
+              "    pm.expect(jsonData).to.have.property('title');\n",
+              "    pm.expect(jsonData).to.have.property('description');\n",
+              "    pm.expect(jsonData).to.have.property('completed');\n",
+              "    pm.expect(jsonData).to.have.property('createdAt');\n",
+              "    pm.expect(jsonData).to.have.property('updatedAt');\n",
+              "});\n",
+              "\n",
+              "pm.test('任务数据应与请求一致', function() {\n",
+              "    var jsonData = pm.response.json();\n",
+              "    var requestBody = JSON.parse(pm.request.body.raw);\n",
+              "    pm.expect(jsonData.title).to.eql(requestBody.title);\n",
+              "    pm.expect(jsonData.description).to.eql(requestBody.description);\n",
+              "    pm.expect(jsonData.completed).to.eql(requestBody.completed);\n",
+              "});\n",
+              "\n",
+              "pm.test('保存创建的任务ID供后续测试使用', function() {\n",
+              "    var jsonData = pm.response.json();\n",
+              "    pm.environment.set('createdTaskId', jsonData.id);\n",
+              "    console.log('已保存新创建任务ID:', jsonData.id);\n",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "更新任务",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"更新后的任务标题\",\n  \"description\": \"更新后的任务描述\",\n  \"completed\": true\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/tasks/1",
+          "host": ["{{baseUrl}}"],
+          "path": ["tasks", "1"]
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "// 先检查状态码，可能返回404（任务不存在）或200（成功）\n",
+              "pm.test('状态码应为200或404', function() {\n",
+              "    pm.expect([200, 404]).to.include(pm.response.code);\n",
+              "});\n",
+              "\n",
+              "// 根据状态码决定后续测试\n",
+              "if (pm.response.code === 200) {\n",
+              "    pm.test('响应应为JSON格式', function() {\n",
+              "        pm.response.to.be.json;\n",
+              "    });\n",
+              "    \n",
+              "    pm.test('更新后的任务应包含所有必要字段', function() {\n",
+              "        var jsonData = pm.response.json();\n",
+              "        pm.expect(jsonData).to.have.property('id');\n",
+              "        pm.expect(jsonData).to.have.property('title');\n",
+              "        pm.expect(jsonData).to.have.property('description');\n",
+              "        pm.expect(jsonData).to.have.property('completed');\n",
+              "        pm.expect(jsonData).to.have.property('createdAt');\n",
+              "        pm.expect(jsonData).to.have.property('updatedAt');\n",
+              "    });\n",
+              "    \n",
+              "    pm.test('任务数据应已更新', function() {\n",
+              "        var jsonData = pm.response.json();\n",
+              "        var requestBody = JSON.parse(pm.request.body.raw);\n",
+              "        pm.expect(jsonData.title).to.eql(requestBody.title);\n",
+              "        pm.expect(jsonData.description).to.eql(requestBody.description);\n",
+              "        pm.expect(jsonData.completed).to.eql(requestBody.completed);\n",
+              "    });\n",
+              "    \n",
+              "    pm.test('任务ID不应改变', function() {\n",
+              "        var jsonData = pm.response.json();\n",
+              "        pm.expect(jsonData.id).to.eql(1);\n",
+              "    });\n",
+              "} else {\n",
+              "    pm.test('任务不存在时的响应处理', function() {\n",
+              "        console.log('任务不存在，状态码:', pm.response.code);\n",
+              "    });\n",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "删除任务",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/tasks/1",
+          "host": ["{{baseUrl}}"],
+          "path": ["tasks", "1"]
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('状态码应为204', function() {\n",
+              "    pm.response.to.have.status(204);\n",
+              "});\n",
+              "\n",
+              "pm.test('响应体应为空', function() {\n",
+              "    pm.expect(pm.response.text()).to.be.empty;\n",
+              "});\n",
+              "\n",
+              "pm.test('验证任务已被删除', function() {\n",
+              "    pm.sendRequest(pm.environment.get('baseUrl') + '/tasks/1', function(err, response) {\n",
+              "        pm.expect(response.code).to.eql(404);\n",
+              "    });\n",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "批量删除任务",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "[1, 2, 3]"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/tasks/batch",
+          "host": ["{{baseUrl}}"],
+          "path": ["tasks", "batch"]
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('状态码应为200', function() {\n",
+              "    pm.response.to.have.status(200);\n",
+              "});\n",
+              "\n",
+              "pm.test('响应应为JSON格式', function() {\n",
+              "    pm.response.to.be.json;\n",
+              "});\n",
+              "\n",
+              "pm.test('响应应包含删除结果信息', function() {\n",
+              "    var jsonData = pm.response.json();\n",
+              "    pm.expect(jsonData).to.have.property('deletedCount');\n",
+              "    pm.expect(typeof jsonData.deletedCount).to.eql('number');\n",
+              "    pm.expect(jsonData.deletedCount).to.be.at.least(0);\n",
+              "});\n",
+              "\n",
+              "pm.test('验证删除数量合理性', function() {\n",
+              "    var jsonData = pm.response.json();\n",
+              "    var requestIds = JSON.parse(pm.request.body.raw);\n",
+              "    pm.expect(jsonData.deletedCount).to.be.at.most(requestIds.length);\n",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "更新任务状态",
+      "request": {
+        "method": "PATCH",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/tasks/1/status?completed=true",
+          "host": ["{{baseUrl}}"],
+          "path": ["tasks", "1", "status"],
+          "query": [
+            {"key": "completed", "value": "true"}
+          ]
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('状态码应为200', function() {\n",
+              "    pm.response.to.have.status(200);\n",
+              "});\n",
+              "\n",
+              "pm.test('响应应为JSON格式', function() {\n",
+              "    pm.response.to.be.json;\n",
+              "});\n",
+              "\n",
+              "pm.test('更新后的任务应包含所有必要字段', function() {\n",
+              "    var jsonData = pm.response.json();\n",
+              "    pm.expect(jsonData).to.have.property('id');\n",
+              "    pm.expect(jsonData).to.have.property('title');\n",
+              "    pm.expect(jsonData).to.have.property('description');\n",
+              "    pm.expect(jsonData).to.have.property('completed');\n",
+              "    pm.expect(jsonData).to.have.property('createdAt');\n",
+              "    pm.expect(jsonData).to.have.property('updatedAt');\n",
+              "});\n",
+              "\n",
+              "pm.test('任务状态应已更新', function() {\n",
+              "    var jsonData = pm.response.json();\n",
+              "    pm.expect(jsonData.completed).to.eql(true);\n",
+              "});\n",
+              "\n",
+              "pm.test('任务ID不应改变', function() {\n",
+              "    var jsonData = pm.response.json();\n",
+              "    pm.expect(jsonData.id).to.eql(1);\n",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "获取所有任务（不分页）",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/tasks/all/list",
+          "host": ["{{baseUrl}}"],
+          "path": ["tasks", "all", "list"]
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('状态码应为200', function() {\n",
+              "    pm.response.to.have.status(200);\n",
+              "});\n",
+              "\n",
+              "pm.test('响应应为JSON格式', function() {\n",
+              "    pm.response.to.be.json;\n",
+              "});\n",
+              "\n",
+              "pm.test('响应应为数组类型', function() {\n",
+              "    var jsonData = pm.response.json();\n",
+              "    pm.expect(Array.isArray(jsonData)).to.be.true;\n",
+              "});\n",
+              "\n",
+              "pm.test('每个任务对象应包含必要字段', function() {\n",
+              "    var jsonData = pm.response.json();\n",
+              "    jsonData.forEach(function(task) {\n",
+              "        pm.expect(task).to.have.property('id');\n",
+              "        pm.expect(task).to.have.property('title');\n",
+              "        pm.expect(task).to.have.property('description');\n",
+              "        pm.expect(task).to.have.property('completed');\n",
+              "        pm.expect(task).to.have.property('createdAt');\n",
+              "        pm.expect(task).to.have.property('updatedAt');\n",
+              "    });\n",
+              "});\n",
+              "\n",
+              "pm.test('保存任务总数', function() {\n",
+              "    var jsonData = pm.response.json();\n",
+              "    pm.environment.set('totalTasksCount', jsonData.length);\n",
+              "    console.log('任务总数:', jsonData.length);\n",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080",
+      "type": "string"
+    }
+  ]
+}

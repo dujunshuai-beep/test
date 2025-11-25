@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.taskmanagement.mapper.TaskMapper">
+    
+    <select id="findAll" resultType="com.example.taskmanagement.model.Task">
+        SELECT id, title, description, completed, created_at as createdAt, updated_at as updatedAt
+        FROM tasks
+        <where>
+            <if test="params.title != null and params.title != ''">
+                AND title LIKE CONCAT('%', #{params.title}, '%')
+            </if>
+            <if test="params.description != null and params.description != ''">
+                AND description LIKE CONCAT('%', #{params.description}, '%')
+            </if>
+            <if test="params.completed != null">
+                AND completed = #{params.completed}
+            </if>
+            <if test="params.startDate != null">
+                AND created_at &gt;= #{params.startDate}
+            </if>
+            <if test="params.endDate != null">
+                AND created_at &lt;= #{params.endDate}
+            </if>
+        </where>
+        LIMIT #{pageable.offset}, #{pageable.pageSize}
+    </select>
+    
+    <select id="findById" resultType="com.example.taskmanagement.model.Task">
+        SELECT id, title, description, completed, created_at as createdAt, updated_at as updatedAt
+        FROM tasks
+        WHERE id = #{id}
+    </select>
+    
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO tasks (title, description, completed, created_at, updated_at)
+        VALUES (#{title}, #{description}, #{completed}, NOW(), NOW())
+    </insert>
+    
+    <update id="update">
+        UPDATE tasks
+        SET
+            title = #{title},
+            description = #{description},
+            completed = #{completed},
+            updated_at = NOW()
+        WHERE id = #{id}
+    </update>
+    
+    <delete id="delete">
+        DELETE FROM tasks
+        WHERE id = #{id}
+    </delete>
+    
+    <select id="count" resultType="int">
+        SELECT COUNT(*)
+        FROM tasks
+        <where>
+            <if test="params.title != null and params.title != ''">
+                AND title LIKE CONCAT('%', #{params.title}, '%')
+            </if>
+            <if test="params.description != null and params.description != ''">
+                AND description LIKE CONCAT('%', #{params.description}, '%')
+            </if>
+            <if test="params.completed != null">
+                AND completed = #{params.completed}
+            </if>
+            <if test="params.startDate != null">
+                AND created_at &gt;= #{params.startDate}
+            </if>
+            <if test="params.endDate != null">
+                AND created_at &lt;= #{params.endDate}
+            </if>
+        </where>
+    </select>
+</mapper>
