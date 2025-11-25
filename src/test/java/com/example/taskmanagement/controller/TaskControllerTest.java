@@ -10,6 +10,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -92,6 +93,39 @@ public class TaskControllerTest {
                 .andExpect(MockMvcResultMatchers.jsonPath("$.content[0].title").value("任务1"))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.content[1].title").value("任务2"));
     }
+    
+    @Test
+    void testGetAllTasks_WithAllFilters() throws Exception {
+        List<Task> tasks = Arrays.asList(task1);
+        Page<Task> taskPage = new PageImpl<>(tasks);
+        Mockito.when(taskService.findAllTasks(Mockito.any(Map.class), Mockito.any(Pageable.class))).thenReturn(taskPage);
+
+        mockMvc.perform(MockMvcRequestBuilders.get("/tasks")
+                .param("title", "任务1")
+                .param("description", "描述")
+                .param("completed", "false")
+                .param("startDate", "2023-01-01")
+                .param("endDate", "2024-01-01")
+                .param("page", "1")
+                .param("size", "5")
+                .param("sortBy", "title")
+                .param("direction", "asc")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.content.length()").value(1));
+    }
+    
+    @Test
+    void testGetAllTasks_AscendingSort() throws Exception {
+        List<Task> tasks = Arrays.asList(task1, task2);
+        Page<Task> taskPage = new PageImpl<>(tasks);
+        Mockito.when(taskService.findAllTasks(Mockito.any(Map.class), Mockito.any(Pageable.class))).thenReturn(taskPage);
+
+        mockMvc.perform(MockMvcRequestBuilders.get("/tasks")
+                .param("direction", "asc")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(MockMvcResultMatchers.status().isOk());
+    }
 
     @Test
     void testGetTaskById() throws Exception {
@@ -157,6 +191,18 @@ public class TaskControllerTest {
                 .andExpect(MockMvcResultMatchers.jsonPath("$.title").value("更新后的任务1"))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.completed").value(true));
     }
+    
+    @Test
+    void testUpdateTask_WithNonExistentId() throws Exception {
+        Mockito.when(taskService.update(Mockito.eq(999L), Mockito.any(Task.class))).thenReturn(null);
+
+        mockMvc.perform(MockMvcRequestBuilders.put("/tasks/999")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(task1)))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.content().string("")
+                );
+    }
 
     @Test
     void testDeleteTask() throws Exception {
@@ -192,6 +238,35 @@ public class TaskControllerTest {
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.completed").value(true));
+    }
+    
+    @Test
+    void testUpdateTaskStatus_WithNonExistentId() throws Exception {
+        Mockito.when(taskService.updateStatus(Mockito.eq(999L), Mockito.anyBoolean())).thenReturn(null);
+
+        mockMvc.perform(MockMvcRequestBuilders.patch("/tasks/999/status")
+                .param("completed", "true")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.content().string("")
+                );
+    }
+    
+    @Test
+    void testUpdateTaskStatus_ToFalse() throws Exception {
+        Mockito.when(taskService.updateStatus(1L, false)).thenReturn(task1);
+
+        mockMvc.perform(MockMvcRequestBuilders.patch("/tasks/1/status")
+                .param("completed", "false")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(MockMvcResultMatchers.status().isOk());
+    }
+    
+    @Test
+    void testUpdateTaskStatus_MissingParameter() throws Exception {
+        mockMvc.perform(MockMvcRequestBuilders.patch("/tasks/1/status")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(MockMvcResultMatchers.status().isBadRequest());
     }
 
     @Test

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report.xsd" name="com.example.taskmanagement.config.SwaggerConfigTest" time="13.079" tests="1" errors="0" skipped="0" failures="0">
+<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report.xsd" name="com.example.taskmanagement.model.TaskTest" time="0.001" tests="5" errors="0" skipped="0" failures="0">
   <properties>
     <property name="gopherProxySet" value="false"/>
     <property name="awt.toolkit" value="sun.lwawt.macosx.LWCToolkit"/>
@@ -67,5 +67,9 @@
     <property name="socksNonProxyHosts" value="192.168.0.0/16|*.192.168.0.0/16|10.0.0.0/8|*.10.0.0.0/8|172.16.0.0/12|*.172.16.0.0/12|127.0.0.1|localhost|*.localhost|local|*.local|timestamp.apple.com|*.timestamp.apple.com"/>
     <property name="http.proxyPort" value="7890"/>
   </properties>
-  <testcase name="testCustomOpenAPI" classname="com.example.taskmanagement.config.SwaggerConfigTest" time="0.691"/>
+  <testcase name="testTaskWithNullValues" classname="com.example.taskmanagement.model.TaskTest" time="0"/>
+  <testcase name="testTaskEqualsAndHashCode" classname="com.example.taskmanagement.model.TaskTest" time="0"/>
+  <testcase name="testTaskGetterSetter" classname="com.example.taskmanagement.model.TaskTest" time="0"/>
+  <testcase name="testTaskCopy" classname="com.example.taskmanagement.model.TaskTest" time="0"/>
+  <testcase name="testTaskToString" classname="com.example.taskmanagement.model.TaskTest" time="0"/>
 </testsuite>

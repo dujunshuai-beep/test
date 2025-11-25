@@ -2,6 +2,7 @@ com/example/taskmanagement/controller/TaskControllerTest.class
 com/example/taskmanagement/config/SwaggerConfigTest.class
 com/example/taskmanagement/TaskManagementApiApplicationTest.class
 com/example/taskmanagement/service/impl/TaskServiceImplTest.class
+com/example/taskmanagement/model/TaskTest.class
 com/example/taskmanagement/config/MyBatisConfigTest.class
 com/example/taskmanagement/mapper/TaskMapperTest.class
 com/example/taskmanagement/controller/TaskControllerTest$1.class

@@ -57,13 +57,13 @@ public class TaskController {
         // 构建过滤参数
 <span class="fc" id="L58">        Map&lt;String, Object&gt; params = new HashMap&lt;&gt;();</span>
 <span class="pc bpc" id="L59" title="1 of 4 branches missed.">        if (title != null &amp;&amp; !title.isEmpty()) params.put(&quot;title&quot;, title);</span>
-<span class="pc bpc" id="L60" title="3 of 4 branches missed.">        if (description != null &amp;&amp; !description.isEmpty()) params.put(&quot;description&quot;, description);</span>
-<span class="pc bpc" id="L61" title="1 of 2 branches missed.">        if (completed != null) params.put(&quot;completed&quot;, completed);</span>
-<span class="pc bpc" id="L62" title="1 of 2 branches missed.">        if (startDate != null) params.put(&quot;startDate&quot;, LocalDateTime.of(startDate, LocalTime.MIN));</span>
-<span class="pc bpc" id="L63" title="1 of 2 branches missed.">        if (endDate != null) params.put(&quot;endDate&quot;, LocalDateTime.of(endDate, LocalTime.MAX));</span>
+<span class="pc bpc" id="L60" title="1 of 4 branches missed.">        if (description != null &amp;&amp; !description.isEmpty()) params.put(&quot;description&quot;, description);</span>
+<span class="fc bfc" id="L61" title="All 2 branches covered.">        if (completed != null) params.put(&quot;completed&quot;, completed);</span>
+<span class="fc bfc" id="L62" title="All 2 branches covered.">        if (startDate != null) params.put(&quot;startDate&quot;, LocalDateTime.of(startDate, LocalTime.MIN));</span>
+<span class="fc bfc" id="L63" title="All 2 branches covered.">        if (endDate != null) params.put(&quot;endDate&quot;, LocalDateTime.of(endDate, LocalTime.MAX));</span>
 
         // 构建分页参数
-<span class="pc bpc" id="L66" title="1 of 2 branches missed.">        Sort.Direction sortDirection = direction.equalsIgnoreCase(&quot;asc&quot;) ? Sort.Direction.ASC : Sort.Direction.DESC;</span>
+<span class="fc bfc" id="L66" title="All 2 branches covered.">        Sort.Direction sortDirection = direction.equalsIgnoreCase(&quot;asc&quot;) ? Sort.Direction.ASC : Sort.Direction.DESC;</span>
 <span class="fc" id="L67">        Sort sort = Sort.by(sortDirection, sortBy);</span>
 <span class="fc" id="L68">        Pageable pageable = PageRequest.of(page, size, sort);</span>
 

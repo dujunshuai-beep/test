@@ -1,4 +1,4 @@
 -------------------------------------------------------------------------------
 Test set: com.example.taskmanagement.mapper.TaskMapperTest
 -------------------------------------------------------------------------------
-Tests run: 12, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 3.946 s - in com.example.taskmanagement.mapper.TaskMapperTest
+Tests run: 12, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 3.884 s - in com.example.taskmanagement.mapper.TaskMapperTest
